@@ -9,11 +9,11 @@ class AttributeReader:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self):
         self.file.close()
 
     def listAllAttributeName(self):
-        matching = self.matchPattern(r'[a-zA-Z][0-9a-zA-Z.:_]*=')
+        matching = matchPattern(self.file, r'[a-zA-Z][0-9a-zA-Z.:_]*=')
 
         name_set = set()
         for match_object in matching:
@@ -24,7 +24,7 @@ class AttributeReader:
 
     def listAttributeValues(self, attribute_name):
         # make content after '=' to be a match group
-        matching = self.matchPattern(attribute_name + r'=(.*)')
+        matching = matchPattern(self.file, attribute_name + r'=(.*)')
 
         value_set = set()
         for match_object in matching:
@@ -32,15 +32,16 @@ class AttributeReader:
 
         return sorted(value_set)
 
-    def matchPattern(self, pattern):
-        matching = list()
 
-        for line in self.file:
-            match_object = re.match(pattern, line)
-            if match_object:
-                matching.append(match_object)
+def matchPattern(input, pattern):
+    matching = list()
 
-        return matching
+    for line in input:
+        match_object = re.match(pattern, line)
+        if match_object:
+            matching.append(match_object)
+
+    return matching
 
 
 if __name__ == '__main__':
