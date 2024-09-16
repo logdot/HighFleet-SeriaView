@@ -1,13 +1,13 @@
 import re
 import sys
-from collections import Iterable
+from collections.abc import Iterable
 
 ATTRIBUTE_PATTERN = r'([a-zA-Z][0-9a-zA-Z.:_]*)'
 VALUE_PATTERN = r'(.*)'
 
 
 class AttributeReader:
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.file = open(path, 'r', encoding='cp1252')
 
     def __enter__(self):
@@ -54,6 +54,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     with AttributeReader(sys.argv[1]) as reader:
-        print('Attribute names:')
         for name in reader.listAllAttributeName():
             print(name)
