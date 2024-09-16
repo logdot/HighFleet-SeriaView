@@ -1,5 +1,9 @@
 import re
 import sys
+from collections import Iterable
+
+ATTRIBUTE_PATTERN = r'([a-zA-Z][0-9a-zA-Z.:_]*)'
+VALUE_PATTERN = r'(.*)'
 
 
 class AttributeReader:
@@ -12,19 +16,19 @@ class AttributeReader:
     def __exit__(self, exc_type, exc_value, traceback):
         self.file.close()
 
-    def listAllAttributeName(self):
-        matching = matchPattern(self.file, r'[a-zA-Z][0-9a-zA-Z.:_]*=')
+    def listAllAttributeName(self) -> list:
+        matching = matchPattern(
+            self.file, ATTRIBUTE_PATTERN + '=' + VALUE_PATTERN)
 
         name_set = set()
         for match_object in matching:
-            # -1 to remove '='
-            name_set.add(match_object.group()[:-1])
+            name_set.add(match_object.group(1))
 
         return sorted(name_set)
 
-    def listAttributeValues(self, attribute_name):
-        # make content after '=' to be a match group
-        matching = matchPattern(self.file, attribute_name + r'=(.*)')
+    def listAttributeValues(self, attribute_name: str) -> list:
+        matching = matchPattern(
+            self.file, attribute_name + '=' + VALUE_PATTERN)
 
         value_set = set()
         for match_object in matching:
@@ -33,7 +37,7 @@ class AttributeReader:
         return sorted(value_set)
 
 
-def matchPattern(input, pattern):
+def matchPattern(input: Iterable, pattern: str) -> list:
     matching = list()
 
     for line in input:
