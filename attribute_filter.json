@@ -1,0 +1,83 @@
+[
+    {
+        "NodeName": "Escadra",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_id",
+            "m_incity.id",
+            "m_name",
+            "m_position.x",
+            "m_position.y",
+            "m_reaction_time",
+            "m_role",
+            "m_tele_fuel_capacity",
+            "m_tele_fuel_total"
+        ]
+    },
+    {
+        "NodeName": "Node",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_id",
+            "m_master_id",
+            "m_name"
+        ]
+    },
+    {
+        "NodeName": "Creature",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_escadra.id",
+            "m_id",
+            "m_master_id",
+            "m_name",
+            "m_owner_id",
+            "m_ship_name",
+            "m_tele_fuel_capacity",
+            "m_tele_fuel_total"
+        ]
+    },
+    {
+        "NodeName": "Location",
+        "AttributeInclude": [
+            "m_aad",
+            "m_bonus_type",
+            "m_classname",
+            "m_code",
+            "m_codename",
+            "m_feodal.id",
+            "m_id",
+            "m_name",
+            "m_position.x",
+            "m_position.y",
+            "m_production",
+            "m_repair_capacity",
+            "m_treason_threshold"
+        ]
+    },
+    {
+        "NodeName": "Item",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_count",
+            "m_index"
+        ]
+    },
+    {
+        "NodeName": "NPC",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_fullname",
+            "m_joined",
+            "m_location",
+            "m_loyalty",
+            "m_name",
+            "m_tarkhan"
+        ]
+    }
+]
