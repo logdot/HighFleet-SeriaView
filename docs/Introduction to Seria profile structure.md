@@ -36,7 +36,7 @@ Above is a typical profile structure in the middle of the campaign. `[...]` deno
 `Location` contains information about the city on the map, this includes callsign, city type (e.g. Fuel Depot), parts and ammunition sold by the city.  
 `NPC` contains information about all hireable characters in the game. Besides, all purchasable ships in a city are technically owned by an NPC (so they also have their own `NPC` node and if you take a close look, each NPC even has its own name and characteristic such as force and kindness).  
 There are a few `Item` nodes that are directly stored as a child node of the root profile node. From what we know so far, these nodes contain information about the player's ammunition depot (because all ships can access it whether they are in a detachment or not, this is less related to a specific location or an escadra, I figure that's why it stores at the bottom of the profile).  
-The last `Node` node (yes, its just named `Node`). Contains information about the paint mark (e.g. pencil marker and ruler) the player put on the map. Sometimes it's also being used to store inventory parts (I am not too sure about this, because the position where inventory parts can change between city or in-air fleet, need further verification)
+The last `Node` node (yes, its just named `Node`). Contains information about the paint mark (e.g. pencil marker and ruler) the player put on the map.
 
 ### Escadra
 
