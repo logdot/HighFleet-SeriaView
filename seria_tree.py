@@ -5,7 +5,7 @@ from typing import Tuple
 
 from treelib import Tree, Node
 
-import seria_attribute
+from seria_attribute import *
 
 
 class SeriaTree:
@@ -24,7 +24,7 @@ class SeriaTree:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type=None, exc_value=None, traceback=None):
         self.file.close()
 
     def build(self, attribute_filter: dict = None, limit_depth=False):
@@ -69,14 +69,17 @@ class SeriaTree:
                         self.parent_ids.append(node.identifier)
                     else:
                         node = self.tree.get_node(self.parent_ids[-1])
-                        if attribute_filter is not None and attribute_name in attribute_filter[node.tag]:
-                            if isinstance(node.data[attribute_name], list):
-                                node.data[attribute_name].append(
-                                    attribute_value)
-                            elif node.data[attribute_name] is not None:
-                                # make a list for multiple values
-                                node.data[attribute_name] = [
-                                    node.data[attribute_name], attribute_value]
+
+                        classname = node.tag
+                        if attribute_filter is not None and classname in attribute_filter and attribute_name in attribute_filter[classname]:
+                            if attribute_name in node.data:
+                                if isinstance(node.data[attribute_name], list):
+                                    node.data[attribute_name].append(
+                                        attribute_value)
+                                else:
+                                    # make a list for multiple values
+                                    node.data[attribute_name] = [
+                                        node.data[attribute_name], attribute_value]
                             else:
                                 node.data[attribute_name] = attribute_value
 
@@ -91,8 +94,8 @@ class SeriaTree:
 
 
 def matchAttribute(input: str) -> Tuple[str, str]:
-    match_object = re.match(seria_attribute.ATTRIBUTE_PATTERN + '=' +
-                            seria_attribute.VALUE_PATTERN, input)
+    match_object = re.match(ATTRIBUTE_PATTERN + '=' +
+                            VALUE_PATTERN, input)
 
     if match_object:
         return match_object.group(1), match_object.group(2)
