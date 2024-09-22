@@ -72,16 +72,19 @@ class SeriaTree:
 
                         classname = node.tag
                         if attribute_filter is not None and classname in attribute_filter and attribute_name in attribute_filter[classname]:
+                            # line number and value
+                            value = (line_index + 1, attribute_value)
+
                             if attribute_name in node.data:
                                 if isinstance(node.data[attribute_name], list):
                                     node.data[attribute_name].append(
-                                        attribute_value)
+                                        value)
                                 else:
                                     # make a list for multiple values
                                     node.data[attribute_name] = [
-                                        node.data[attribute_name], attribute_value]
+                                        node.data[attribute_name], value]
                             else:
-                                node.data[attribute_name] = attribute_value
+                                node.data[attribute_name] = value
 
                             # e.g. m_escadras=327 is part of an Escadra node, but before the bracket
                     self.previous_line = line.strip()
