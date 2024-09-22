@@ -84,7 +84,7 @@ class SeriaTree:
                                 node.data[attribute_name] = attribute_value
 
                             # e.g. m_escadras=327 is part of an Escadra node, but before the bracket
-                    self.previous_line = line
+                    self.previous_line = line.strip()
                 # other data, e.g. mesh data which has no attribute name
                 else:
                     pass  # TODO
