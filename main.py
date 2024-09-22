@@ -63,6 +63,11 @@ class SeriaView:
         self.detail_text.config(state=DISABLED)
         self.detail_text.grid(row=0, column=2, sticky=NSEW)
 
+        text_scrollbar = ttk.Scrollbar(
+            tree_frame, orient="vertical", command=self.detail_text.yview)
+        text_scrollbar.grid(row=0, column=3, sticky=NS)
+        self.detail_text.config(yscrollcommand=text_scrollbar.set)
+
         tree_frame.pack(expand=True, fill=BOTH)
 
     # File menu actions
@@ -130,18 +135,18 @@ class SeriaView:
 def getNodeHeading(node: Node):
     classname = node.tag
     if classname == 'Escadra':
-        name = node.data['m_name']
+        name = node.data['m_name'][1]
         if name == 'MARK' or name == 'DETACHMENT':
             return f"Escadra: {name} [Player]"
         return f"Fleet: {name}"
     if classname == 'Location':
-        return f"City: {node.data['m_name']} - {node.data['m_codename']}"
+        return f"City: {node.data['m_name'][1]} - {node.data['m_codename'][1]}"
     if classname == 'NPC':
         if 'm_tarkhan' in node.data:
-            return f"NPC: {node.data['m_fullname']}"
+            return f"NPC: {node.data['m_fullname'][1]}"
     if classname == 'Node':
         if 'm_name' in node.data:
-            return f"{classname} {node.data['m_name']}"
+            return f"{classname} {node.data['m_name'][1]}"
     return classname
 
 
@@ -151,7 +156,18 @@ def getNodeSummary(node: Node):
 
     output = ''
     for item in node.data.items():
-        output += f"{item[0]}: {item[1]}\n"
+        attribute_name = item[0]
+        value = item[1]
+
+        if attribute_name == 'Header' or attribute_name == 'LineIndex':
+            output += f"{attribute_name}: {value}\n"
+        else:
+            if isinstance(value, list):
+                output += f"{attribute_name}:\n"
+                for v in value:
+                    output += f" {v[1]}\n"
+            else:
+                output += f"{item[0]}: {item[1][1]}\n"
 
     return output
 
