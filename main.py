@@ -110,7 +110,7 @@ class SeriaView:
 
         children = self.profile.tree.children(node_id)
         for child in children:
-            self._load_tree(child.identifier, node_id, depth + 1)
+            self._load_tree(child.identifier, node_id, depth + 1, max_depth)
 
     # Treeview actions
     def _clear_treeview(self):
