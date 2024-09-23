@@ -1,5 +1,20 @@
 [
     {
+        "NodeName": "Profile",
+        "AttributeInclude": [
+            "gameVersion",
+            "m_cash",
+            "m_classname",
+            "m_code",
+            "m_codename",
+            "m_id",
+            "m_name",
+            "m_savetime",
+            "m_scores",
+            "m_unlocks"
+        ]
+    },
+    {
         "NodeName": "Escadra",
         "AttributeInclude": [
             "m_classname",
@@ -38,6 +53,18 @@
             "m_ship_name",
             "m_tele_fuel_capacity",
             "m_tele_fuel_total"
+        ]
+    },
+    {
+        "NodeName": "Body",
+        "AttributeInclude": [
+            "m_classname",
+            "m_code",
+            "m_count",
+            "m_id",
+            "m_master_id",
+            "m_name",
+            "m_oid"
         ]
     },
     {
