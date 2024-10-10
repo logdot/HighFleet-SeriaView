@@ -24,6 +24,12 @@ When adding a new ship node from a design file to a player's profile, `m_id` mus
 |m_master_id||
 |m_owner_id||
 
+## Escadra
+
+Root node of a fleet in profile.
+
+m_id
+
 ## Frame
 
 |Dependency|Consumer|
@@ -40,13 +46,16 @@ When adding a new ship node from a design file to a player's profile, `m_id` mus
 |m_A.id||
 |m_B.id||
 
-## Node (root)
+## Node
+
+Root node of a ship design.
 
 |Dependency|Consumer|
 |-|-|
 |m_id|[Body](#body) m_master_id|
 ||[Frame](#frame) m_master_id|
 ||[Joint](#joint) m_master.id|
+|m_master_id|[Escadra](#escadra) m_id|
 
 ## Slot
 
