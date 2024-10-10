@@ -22,7 +22,7 @@ class SeriaNode(Node):
         '''Set the value of an attribute. If the attribute not exist, it will be created.'''
         self.data[attribute_name] = value
 
-    def remove_attribute(self, attribute_name):
+    def del_attribute(self, attribute_name):
         '''Remove an attribute. Return the value of the attribute if it exists.'''
         return self.data.pop(attribute_name, None)
 
@@ -58,7 +58,7 @@ class SeriaTree(Tree):
         '''Set the attribute value of the root node. If the attribute not exist, it will be created.'''
         self._root_node().data[attribute_name] = value
 
-    def remove_attribute(self, attribute_name):
+    def del_attribute(self, attribute_name):
         '''Remove an attribute from the root node. Return the value of the attribute if it exists.'''
         return self._root_node().data.pop(attribute_name, None)
 
@@ -70,23 +70,24 @@ class SeriaTree(Tree):
         '''Get a child node by its order(index) in the file.'''
         return self.get_nodes()[index]
 
-    def find_node_first(self, predicate) -> SeriaNode:
+    def get_node_if(self, predicate) -> SeriaNode:
         '''Get the first child node that satisfy the predicate function.'''
+
         for child in self.children(self.root):
             if predicate(child):
                 return child
         return None
 
-    def find_node_first_by_class(self, type: str) -> SeriaNode:
+    def get_node_by_class(self, type: str) -> SeriaNode:
         '''Get the first child node with the specified classname.'''
-        return self.find_node_first(lambda node: node.tag == type)
+        return self.get_node_if(lambda node: node.tag == type)
 
     # child nodes read operation
     def get_nodes(self) -> list:
         '''Get all direct child nodes of the root node.'''
         return self.children(self.root)
 
-    def find_nodes_by_class(self, type: str) -> filter:
+    def get_nodes_by_class(self, type: str) -> filter:
         '''Get all direct child nodes of the root node with the specified type.'''
         return self.filter_nodes(lambda node: node.tag == type)
 
@@ -101,31 +102,33 @@ class SeriaTree(Tree):
     # child nodes write operation
     def add_nodes(self, nodes: list):
         for node in nodes:
-            self.add_node(node)
+            self.add_node(node, self._root_node())
 
-    def remove_node_by_index(self, index: int):
+    def del_node_by_index(self, index: int):
         '''Remove a child node by its order(index) in the file.'''
         nodes = self.get_nodes()
-        super().remove_node(nodes[index].identifier)
+        self.remove_node(nodes[index].identifier)
 
-    def remove_nodes(self, nodes: list) -> int:
+    def del_nodes(self, nodes: list) -> int:
         '''Remove all child nodes in the list. Return the number of nodes removed.'''
+
         count = 0
         for node in nodes:
             count += self.remove_node(node)
         return count
 
-    def remove_nodes_if(self, predicate) -> int:
+    def del_nodes_if(self, predicate) -> int:
         '''Remove all child nodes that satisfy the predicate (condition) function. Return the number of nodes removed.'''
+
         nodes = [child for child in self.children(
             self.root) if predicate(child)]
-        return self.remove_nodes(nodes)
+        return self.del_nodes(nodes)
 
-    def remove_nodes_by_class(self, type: str) -> int:
-        '''Remove all child nodes with the specified type. Return the number of nodes removed.'''
-        return self.remove_nodes_by_cond(lambda node: node.tag == type)
+    def del_nodes_by_class(self, classname: str) -> int:
+        '''Remove all child nodes with the specified classname. Return the number of nodes removed.'''
+        return self.del_nodes_if(lambda node: node.tag == classname)
 
-    def foreach(self, action):
+    def foreach_node(self, action):
         '''Apply the action function to all child nodes.'''
         for child in self.children(self.root):
             action(child)
@@ -135,8 +138,9 @@ class SeriaTree(Tree):
         '''Get a subtree (shallow) by its order(index) in the file.'''
         return self.subtree(self.get_node_by_index(index).identifier)
 
-    def find_subtree_first(self, predicate):
+    def get_subtree_if(self, predicate):
         '''Get the first subtree that satisfy the predicate function.'''
+
         for child in self.children(self.root):
             if predicate(child):
                 return self.subtree(child.identifier)
@@ -152,7 +156,7 @@ def _matchAttribute(input: str):
     return None, None
 
 
-def dump(tree: SeriaTree):
+def dump(tree: SeriaTree) -> str:
     '''Dump the tree back to the seria format.'''
 
     root = tree._root_node()
@@ -189,7 +193,9 @@ def load(filepath: str, max_depth: int = None) -> SeriaTree:
     load function uses original treelib functions to create and manage the tree structure.
     Beaware that SeriaTree is a subclass of Tree, and may have overidden methods.
     @param filepath: The path to the seria file.
-    @param max_depth: The maximum depth of the tree. If None, the tree will be fully parsed.'''
+    @param max_depth: The maximum depth of the tree. If None, the tree will be fully parsed.
+    @return: The tree structure or None if the file could not be opened.'''
+
     logging.basicConfig(level=logging.DEBUG)
 
     try:
