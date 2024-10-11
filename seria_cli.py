@@ -3,7 +3,7 @@ import sys
 import seria
 
 __author__ = 'Max'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def _print_help():
@@ -11,6 +11,7 @@ def _print_help():
 Options:
     -attributes              | List all distinct attributes
     -values <attribute name> | List all distinct values for the given attribute
+    -tree [<depth>]          | Print the tree structure of the seria file with optional depth
 Example:
     python seria.py -values m_classname profile.seria parts.seria''')
 
@@ -78,6 +79,23 @@ if __name__ == '__main__':
             sys.exit(1)
 
         list_values(sys.argv[2], sys.argv[3:])
+    elif option == '-tree':
+        try:
+            depth = int(sys.argv[2])
+            file_index = 3
+        except ValueError:
+            depth = None
+            file_index = 2
+
+        for filepath in sys.argv[file_index:]:
+            try:
+                node = seria.load(filepath)
+                output_filepath = filepath + '-tree.txt'
+                with open(output_filepath, 'w') as file:
+                    file.write(seria.tree(node, depth))
+                    print(f'Tree structure written to {output_filepath}')
+            except IOError:
+                logging.error('Could not open file: ' + filepath)
     else:
         logging.error(f'Invalid option: {option}')
         _print_help()
