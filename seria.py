@@ -256,29 +256,25 @@ def _match_attribute(input: str):
     return None, None
 
 
-def _dump(node: SeriaNode) -> str:
-    '''Dump a SeriaNode to a string.'''
+def tree(node: SeriaNode, max_depth: int = None) -> str:
+    '''Print a SeriaNode in a tree-like format.'''
+
+    logger = logging.getLogger('seria.tree')
+
+    if max_depth is not None and max_depth < 1:
+        logger.error('max_depth must be greater or equal to 1')
 
     output = []
 
-    if node.header is not None:
-        output.append(node.header)
-    output.append('{')
+    def _print_node(node, depth):
+        output.append('  ' * (depth - 1) + node.get_attribute('m_classname'))
 
-    for group in node.data_group:
-        if isinstance(group, alist):
-            for name, value in group:
-                if name == '_mesh':
-                    output.extend(f'{v}' for v in value)
-                else:
-                    if isinstance(value, list):
-                        output.extend(f'{name}={v}' for v in value)
-                    else:
-                        output.append(f'{name}={value}')
-        else:
-            output.append(_dump(group))
+        if max_depth is None or depth < max_depth:
+            for child in node.get_nodes():
+                _print_node(child, depth + 1)
 
-    output.append('}')
+    _print_node(node, 1)
+
     return '\n'.join(output)
 
 
@@ -286,6 +282,29 @@ def dump(filepath: str, node: SeriaNode):
     '''Dump a SeriaNode to a file.'''
 
     logger = logging.getLogger('seria.dump')
+
+    def _dump(node: SeriaNode) -> str:
+        output = []
+
+        if node.header is not None:
+            output.append(node.header)
+        output.append('{')
+
+        for group in node.data_group:
+            if isinstance(group, alist):
+                for name, value in group:
+                    if name == '_mesh':
+                        output.extend(f'{v}' for v in value)
+                    else:
+                        if isinstance(value, list):
+                            output.extend(f'{name}={v}' for v in value)
+                        else:
+                            output.append(f'{name}={value}')
+            else:
+                output.append(_dump(group))
+
+        output.append('}')
+        return '\n'.join(output)
 
     try:
         with open(filepath, 'w', encoding='cp1251') as file:
