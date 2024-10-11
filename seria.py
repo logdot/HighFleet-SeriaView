@@ -27,6 +27,10 @@ class alist:
         return key in self.keys()
 
     # list operations
+
+    def index(self, key) -> int:
+        return self.order.index(key)
+
     def insert(self, index, key, value):
         self.data[key] = value
         self.order.insert(index, key)
@@ -35,10 +39,8 @@ class alist:
         del self.data[key]
         self.order.remove(key)
 
-    def index(self, key) -> int:
-        return self.order.index(key)
-
     # dict operations
+
     def get(self, key):
         return self.data.get(key)
 
@@ -77,19 +79,176 @@ class SeriaNode:
             return
         self.data_group.append(node)
 
-    # node read operations
+    # attribute read operations
+
     def get_attribute(self, name: str):
+        '''Get attribute value if the current node.'''
+
         for group in self.data_group:
             if isinstance(group, alist):
                 # assume that attribute only appear in consecutive order and will not spread accross groups
                 if name in group.keys():
                     return group.get(name)
+
         return None
+
+    def has_attribute(self, name: str) -> bool:
+        '''Check if the current node has an attribute.'''
+
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if name in group.keys():
+                    return True
+
+        return False
+
+    def attribute_names(self) -> set:
+        '''Get all attribute names in the current node.'''
+
+        names = set()
+
+        for group in self.data_group:
+            if isinstance(group, alist):
+                names = names.union(group.keys())
+
+        return names
+
+    # attribute write operations
+
+    def set_attribute(self, name: str, value: str):
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if name in group.keys():
+                    group.put(name, value)
+                    return
+
+    def put_attribute_before(self, name: str, value: str, before: str):
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if before in group.keys():
+                    index = group.index(before)
+
+                    group.insert(index, name, value)
+                    return
+
+    def put_attribute_after(self, name: str, value: str, after: str):
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if after in group.keys():
+                    index = group.index(after)
+
+                    group.insert(index + 1, name, value)
+                    return
+
+    def del_attribute(self, name: str):
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if name in group.keys():
+                    group.remove(name)
+                    return
+
+    # node read operations
+
+    def get_node(self, index: int):
+        '''Get a child node by its order (index) in the file.'''
+
+        return self.get_nodes()[index]
+
+    def get_node_if(self, predicate):
+        '''Get the first child node that satisfies the predicate function.'''
+
+        for group in self.data_group:
+            if isinstance(group, SeriaNode):
+                if predicate(group):
+                    return group
+
+        return None
+
+    def get_node_by_class(self, classname: str):
+        '''Get the first child node with the specified class name.'''
+
+        return self.get_node_if(lambda node: node.get_attribute('m_classname') == classname)
+
+    def get_nodes(self) -> list:
+        '''Get all direct child nodes of the current node.
+        @return: a list of child nodes.'''
+
+        return [group for group in self.data_group if isinstance(group, SeriaNode)]
+
+    def get_nodes_by_class(self, classname: str) -> list:
+        '''Get all child nodes with the specified class name.
+        @return: a list of child nodes'''
+
+        return self.filter_nodes(lambda node: node.get_attribute('m_classname') == classname)
+
+    def node_classes(self) -> set:
+        '''Get all classnames of child nodes.
+        @return: a set of classnames.'''
+
+        return set(node.get_attribute('m_classname') for node in self.get_nodes())
+
+    def node_count(self) -> int:
+        '''Get the number of child nodes.'''
+
+        return len(self.get_nodes())
+
+    def node_index(self, node) -> int:
+        '''Get the order (index) of a child node.'''
+
+        return self.get_nodes().index(node)
+
+    # node write operations
+
+    def add_node(self, node):
+        '''Add a child node to the end of the current node.'''
+
+        self.data_group.append(node)
+
+    def put_node_before(self, node, before):
+        '''Add a child node before another child node.'''
+
+        self.data_group.insert(self.data_group.index(before), node)
+
+    def put_node_after(self, node, after):
+        '''Add a child node after another child node.'''
+
+        self.data_group.insert(self.data_group.index(after) + 1, node)
+
+    def put_node_before_index(self, node, index):
+        '''Add a child node before another child node by index.'''
+
+        self.put_node_before(node, self.get_node(index))
+
+    def put_node_after_index(self, node, index):
+        '''Add a child node after another child node by index.'''
+
+        self.put_node_after(node, self.get_node(index))
+
+    # stream-like operations
+
+    def foreach_node(self, action):
+        '''Apply an action function to all child nodes.'''
+
+        for group in self.data_group:
+            if isinstance(group, SeriaNode):
+                action(group)
+
+    def filter_nodes(self, predicate) -> list:
+        '''Filter all child nodes with a predicate function.
+        @return: a list of child nodes that satisfy the predicate.'''
+
+        return [node for node in self.get_nodes() if predicate(node)]
+
+    def map_nodes(self, mapper) -> list:
+        '''Map all child nodes with a mapper function.
+        @return: a list of mapped values.'''
+
+        return [mapper(node) for node in self.get_nodes()]
 
 
 def _match_attribute(input: str):
     '''Match an attribute and its value from a line of text.
-    @return: a tuple of the attribute and its value, or None if no match'''
+    @return: a tuple of the attribute and its value, or None if no match.'''
 
     match_result = re.match(ATTRIBUTE_PATTERN + '=' + VALUE_PATTERN, input)
     if match_result:
@@ -137,7 +296,7 @@ def dump(filepath: str, node: SeriaNode):
 
 def load(filepath: str) -> SeriaNode:
     '''Load a SeriaNode from a file.
-    @return: the root node of the SeriaNode, or None if the file could not be opened'''
+    @return: the root node of the SeriaNode, or None if the file could not be opened.'''
 
     logger = logging.getLogger('seria.load')
 
