@@ -3,6 +3,9 @@ import logging.config
 import re
 from treelib import Node, Tree
 
+__author__ = 'Max'
+__version__ = '0.1.0'
+
 ATTRIBUTE_PATTERN = r'([a-zA-Z][0-9a-zA-Z.:_]*)'
 VALUE_PATTERN = r'(.*)'
 
@@ -29,6 +32,14 @@ class SeriaNode(Node):
     def get_attribute_names(self):
         return list(self.data.keys())
 
+    def update_attribute_by_value(self, previous_value, new_value):
+        '''Update the attribute value.
+        If the attribute value is equal to the previous value, it will be updated to the new value.'''
+
+        for name in self.get_attribute_names():
+            if self.get_attribute(name) == previous_value:
+                self.set_attribute(name, new_value)
+
 
 class SeriaTree(Tree):
     def __init__(self, tree=None, deep=False, node_class=SeriaNode, identifier=None):
@@ -43,10 +54,6 @@ class SeriaTree(Tree):
     def to_text(self) -> str:
         '''Text representation of the tree structure.'''
         return self.show(stdout=False, sorting=False)
-
-    def clone(self):
-        '''Create a deep copy of the tree.'''
-        return super()._clone(with_tree=True, deep=True)
 
     # root node operation
     def get_attribute(self, attribute_name):
@@ -64,6 +71,21 @@ class SeriaTree(Tree):
 
     def get_attribute_names(self):
         return list(self._root_node().data.keys())
+
+    def update_attribute(self, attribute_name, value):
+        '''Update the attribute value of the root node.
+        It will also find and update the attribute in the child that reference the previous value.
+        This is different from set_attribute, which only update existing attribute.'''
+
+        previous_value = self.get_attribute(attribute_name)
+
+        if not self._root_node().has_attribute(attribute_name):
+            return
+
+        self._root_node().set_attribute(attribute_name, value)
+
+        for node in self.all_nodes():
+            node.update_attribute_by_value(previous_value, value)
 
     # child node operation
     def get_node_by_index(self, index: int) -> SeriaNode:
@@ -98,6 +120,10 @@ class SeriaTree(Tree):
     def node_classes(self) -> set:
         '''Get all direct child node types of the root node.'''
         return set(self.map_nodes(lambda node: node.tag))
+
+    def get_children_attribute(self, attribute_name) -> list:
+        '''Get the attribute value of all child nodes if the attribute exists.'''
+        return [node.get_attribute(attribute_name) for node in self.filter_nodes(lambda node: node.has_attribute(attribute_name))]
 
     # child nodes write operation
     def add_nodes(self, nodes: list):
@@ -145,6 +171,18 @@ class SeriaTree(Tree):
             if predicate(child):
                 return self.subtree(child.identifier)
         return None
+
+    def get_subtree_by_class(self, classname: str):
+        '''Get the first subtree with the specified name.'''
+        return self.get_subtree_if(lambda node: node.tag == classname)
+
+    def get_subtrees_if(self, predicate):
+        '''Get all subtrees that satisfy the predicate function.'''
+        return [self.subtree(child.identifier) for child in self.children(self.root) if predicate(child)]
+
+    def get_subtrees_by_class(self, classname: str):
+        '''Get all subtrees with the specified name.'''
+        return self.get_subtrees_if(lambda node: node.tag == classname)
 
 
 def _matchAttribute(input: str):
