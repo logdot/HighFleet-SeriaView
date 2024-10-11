@@ -13,7 +13,7 @@
 		6080
 	],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip3 install ipykernel treelib",
+	"postCreateCommand": "pip3 install ipykernel",
 	"customizations": {
 		"vscode": {
 			"extensions": [
