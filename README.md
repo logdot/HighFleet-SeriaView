@@ -2,7 +2,8 @@
 
 A parser that aims to visualize the structure of a seria file for the game HighFleet. It also aims to provide a GUI-based program that allows easy edit of seria attributes and add nodes into the file.
 
-Documentation: [docs](/docs/)
+- [Guides](/docs/)  
+- API Documentation: [seria](https://html-preview.github.io/?url=https://github.com/DKAMX/HighFleet-SeriaView/blob/main/docs/seria.html)
 
 ## Project composition
 
