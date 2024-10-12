@@ -92,6 +92,18 @@ class SeriaNode:
 
         return None
 
+    def get_attributes(self):
+        '''Get all attributes in the current node.'''
+
+        attributes = dict()
+
+        for group in self.data_group:
+            if isinstance(group, alist):
+                for name, value in group:
+                    attributes[name] = value
+
+        return attributes
+
     def has_attribute(self, name: str) -> bool:
         '''Check if the current node has an attribute.'''
 
@@ -116,13 +128,54 @@ class SeriaNode:
     # attribute write operations
 
     def set_attribute(self, name: str, value: str):
+        '''Set an attribute value in the current node. This works for both new and existing attributes.
+        New attribute will be add to the end of the current node. If the last section is a node, It will be add after the node.
+        A real example is the root node of the profile, which contains sections of attribute that spread accross the file.'''
+
+        # existing attribute will be replaced with new value
         for group in self.data_group:
             if isinstance(group, alist):
                 if name in group.keys():
                     group.put(name, value)
                     return
 
+        # new attribute will be add to the end of the current node
+        self._add_attribute(name, value)
+
+    def update_attribute(self, name: str, value: str):
+        '''Update the attribute value of the root node.
+        It will also find and update the attribute in the child that reference the previous value.
+        This is different from set_attribute, which only update existing attribute.'''
+
+        old_value = self.get_attribute(name)
+
+        for group in self.data_group:
+            if isinstance(group, alist):
+                if name in group.keys():
+                    group.put(name, value)
+
+        for group in self.data_group:
+            if isinstance(group, SeriaNode):
+                group.update_attribute_by_value(old_value, value)
+
+    def update_attribute_by_value(self, old_value: str, new_value: str):
+        '''Update the attribute value by its old value. This applies to all child nodes and recursively.
+        If the attribute value is equal to the old value, it will be updated to the new value.'''
+
+        for group in self.data_group:
+            if isinstance(group, alist):
+                for name, value in group:
+                    if value == old_value:
+                        group.put(name, new_value)
+            else:
+                group.update_attribute_by_value(old_value, new_value)
+
     def put_attribute_before(self, name: str, value: str, before: str):
+        '''Add an attribute before another attribute.
+        @param name: the name of the attribute to add.
+        @param value: the value of the attribute to add.
+        @param before: the name of the attribute before which the new attribute will be added.'''
+
         for group in self.data_group:
             if isinstance(group, alist):
                 if before in group.keys():
@@ -132,6 +185,11 @@ class SeriaNode:
                     return
 
     def put_attribute_after(self, name: str, value: str, after: str):
+        '''Add an attribute after another attribute.
+        @param name: the name of the attribute to add.
+        @param value: the value of the attribute to add.
+        @param after: the name of the attribute after which the new attribute will be added.'''
+
         for group in self.data_group:
             if isinstance(group, alist):
                 if after in group.keys():
@@ -141,6 +199,9 @@ class SeriaNode:
                     return
 
     def del_attribute(self, name: str):
+        '''Delete an attribute from the current node.
+        @param name: the name of the attribute to delete.'''
+
         for group in self.data_group:
             if isinstance(group, alist):
                 if name in group.keys():
@@ -278,7 +339,7 @@ def tree(node: SeriaNode, max_depth: int = None) -> str:
     return '\n'.join(output)
 
 
-def dump(filepath: str, node: SeriaNode):
+def dump(node: SeriaNode, filepath: str):
     '''Dump a SeriaNode to a file.'''
 
     logger = logging.getLogger('seria.dump')
