@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module seria</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>seria</strong></big></big> (version 0.1.0)</font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/workspaces/HighFleet-SeriaView/seria.py">/workspaces/HighFleet-SeriaView/seria.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="re.html">re</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="seria.html#SeriaNode">SeriaNode</a>
+</font></dt><dt><font face="helvetica, arial"><a href="seria.html#alist">alist</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SeriaNode">class <strong>SeriaNode</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#SeriaNode">SeriaNode</a>(header:&nbsp;str,&nbsp;classname:&nbsp;str)<br>
+&nbsp;<br>
+<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SeriaNode-__init__"><strong>__init__</strong></a>(self, header: str, classname: str)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-add_node"><strong>add_node</strong></a>(self, node)</dt><dd><tt>Add&nbsp;a&nbsp;child&nbsp;node&nbsp;to&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;current&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-attribute_names"><strong>attribute_names</strong></a>(self) -&gt; set</dt><dd><tt>Get&nbsp;all&nbsp;attribute&nbsp;names&nbsp;in&nbsp;the&nbsp;current&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-del_attribute"><strong>del_attribute</strong></a>(self, name: str)</dt><dd><tt>Delete&nbsp;an&nbsp;attribute&nbsp;from&nbsp;the&nbsp;current&nbsp;node.<br>
+@param&nbsp;name:&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;to&nbsp;delete.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-filter_nodes"><strong>filter_nodes</strong></a>(self, predicate) -&gt; list</dt><dd><tt>Filter&nbsp;all&nbsp;child&nbsp;nodes&nbsp;with&nbsp;a&nbsp;predicate&nbsp;function.<br>
+@return:&nbsp;a&nbsp;list&nbsp;of&nbsp;child&nbsp;nodes&nbsp;that&nbsp;satisfy&nbsp;the&nbsp;predicate.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-foreach_node"><strong>foreach_node</strong></a>(self, action)</dt><dd><tt>Apply&nbsp;an&nbsp;action&nbsp;function&nbsp;to&nbsp;all&nbsp;child&nbsp;nodes.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_attribute"><strong>get_attribute</strong></a>(self, name: str)</dt><dd><tt>Get&nbsp;attribute&nbsp;value&nbsp;if&nbsp;the&nbsp;current&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_attributes"><strong>get_attributes</strong></a>(self)</dt><dd><tt>Get&nbsp;all&nbsp;attributes&nbsp;in&nbsp;the&nbsp;current&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_node"><strong>get_node</strong></a>(self, index: int)</dt><dd><tt>Get&nbsp;a&nbsp;child&nbsp;node&nbsp;by&nbsp;its&nbsp;order&nbsp;(index)&nbsp;in&nbsp;the&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_node_by_class"><strong>get_node_by_class</strong></a>(self, classname: str)</dt><dd><tt>Get&nbsp;the&nbsp;first&nbsp;child&nbsp;node&nbsp;with&nbsp;the&nbsp;specified&nbsp;class&nbsp;name.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_node_if"><strong>get_node_if</strong></a>(self, predicate)</dt><dd><tt>Get&nbsp;the&nbsp;first&nbsp;child&nbsp;node&nbsp;that&nbsp;satisfies&nbsp;the&nbsp;predicate&nbsp;function.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_nodes"><strong>get_nodes</strong></a>(self) -&gt; list</dt><dd><tt>Get&nbsp;all&nbsp;direct&nbsp;child&nbsp;nodes&nbsp;of&nbsp;the&nbsp;current&nbsp;node.<br>
+@return:&nbsp;a&nbsp;list&nbsp;of&nbsp;child&nbsp;nodes.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-get_nodes_by_class"><strong>get_nodes_by_class</strong></a>(self, classname: str) -&gt; list</dt><dd><tt>Get&nbsp;all&nbsp;child&nbsp;nodes&nbsp;with&nbsp;the&nbsp;specified&nbsp;class&nbsp;name.<br>
+@return:&nbsp;a&nbsp;list&nbsp;of&nbsp;child&nbsp;nodes</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-has_attribute"><strong>has_attribute</strong></a>(self, name: str) -&gt; bool</dt><dd><tt>Check&nbsp;if&nbsp;the&nbsp;current&nbsp;node&nbsp;has&nbsp;an&nbsp;attribute.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-map_nodes"><strong>map_nodes</strong></a>(self, mapper) -&gt; list</dt><dd><tt>Map&nbsp;all&nbsp;child&nbsp;nodes&nbsp;with&nbsp;a&nbsp;mapper&nbsp;function.<br>
+@return:&nbsp;a&nbsp;list&nbsp;of&nbsp;mapped&nbsp;values.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-node_classes"><strong>node_classes</strong></a>(self) -&gt; set</dt><dd><tt>Get&nbsp;all&nbsp;classnames&nbsp;of&nbsp;child&nbsp;nodes.<br>
+@return:&nbsp;a&nbsp;set&nbsp;of&nbsp;classnames.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-node_count"><strong>node_count</strong></a>(self) -&gt; int</dt><dd><tt>Get&nbsp;the&nbsp;number&nbsp;of&nbsp;child&nbsp;nodes.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-node_index"><strong>node_index</strong></a>(self, node) -&gt; int</dt><dd><tt>Get&nbsp;the&nbsp;order&nbsp;(index)&nbsp;of&nbsp;a&nbsp;child&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_attribute_after"><strong>put_attribute_after</strong></a>(self, name: str, value: str, after: str)</dt><dd><tt>Add&nbsp;an&nbsp;attribute&nbsp;after&nbsp;another&nbsp;attribute.<br>
+@param&nbsp;name:&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;to&nbsp;add.<br>
+@param&nbsp;value:&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;attribute&nbsp;to&nbsp;add.<br>
+@param&nbsp;after:&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;after&nbsp;which&nbsp;the&nbsp;new&nbsp;attribute&nbsp;will&nbsp;be&nbsp;added.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_attribute_before"><strong>put_attribute_before</strong></a>(self, name: str, value: str, before: str)</dt><dd><tt>Add&nbsp;an&nbsp;attribute&nbsp;before&nbsp;another&nbsp;attribute.<br>
+@param&nbsp;name:&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;to&nbsp;add.<br>
+@param&nbsp;value:&nbsp;the&nbsp;value&nbsp;of&nbsp;the&nbsp;attribute&nbsp;to&nbsp;add.<br>
+@param&nbsp;before:&nbsp;the&nbsp;name&nbsp;of&nbsp;the&nbsp;attribute&nbsp;before&nbsp;which&nbsp;the&nbsp;new&nbsp;attribute&nbsp;will&nbsp;be&nbsp;added.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_node_after"><strong>put_node_after</strong></a>(self, node, after)</dt><dd><tt>Add&nbsp;a&nbsp;child&nbsp;node&nbsp;after&nbsp;another&nbsp;child&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_node_after_index"><strong>put_node_after_index</strong></a>(self, node, index)</dt><dd><tt>Add&nbsp;a&nbsp;child&nbsp;node&nbsp;after&nbsp;another&nbsp;child&nbsp;node&nbsp;by&nbsp;index.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_node_before"><strong>put_node_before</strong></a>(self, node, before)</dt><dd><tt>Add&nbsp;a&nbsp;child&nbsp;node&nbsp;before&nbsp;another&nbsp;child&nbsp;node.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-put_node_before_index"><strong>put_node_before_index</strong></a>(self, node, index)</dt><dd><tt>Add&nbsp;a&nbsp;child&nbsp;node&nbsp;before&nbsp;another&nbsp;child&nbsp;node&nbsp;by&nbsp;index.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-set_attribute"><strong>set_attribute</strong></a>(self, name: str, value: str)</dt><dd><tt>Set&nbsp;an&nbsp;attribute&nbsp;value&nbsp;in&nbsp;the&nbsp;current&nbsp;node.&nbsp;This&nbsp;works&nbsp;for&nbsp;both&nbsp;new&nbsp;and&nbsp;existing&nbsp;attributes.<br>
+New&nbsp;attribute&nbsp;will&nbsp;be&nbsp;add&nbsp;to&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;current&nbsp;node.&nbsp;If&nbsp;the&nbsp;last&nbsp;section&nbsp;is&nbsp;a&nbsp;node,&nbsp;It&nbsp;will&nbsp;be&nbsp;add&nbsp;after&nbsp;the&nbsp;node.<br>
+A&nbsp;real&nbsp;example&nbsp;is&nbsp;the&nbsp;root&nbsp;node&nbsp;of&nbsp;the&nbsp;profile,&nbsp;which&nbsp;contains&nbsp;sections&nbsp;of&nbsp;attribute&nbsp;that&nbsp;spread&nbsp;accross&nbsp;the&nbsp;file.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-update_attribute"><strong>update_attribute</strong></a>(self, name: str, value: str)</dt><dd><tt>Update&nbsp;the&nbsp;attribute&nbsp;value&nbsp;of&nbsp;the&nbsp;root&nbsp;node.<br>
+It&nbsp;will&nbsp;also&nbsp;find&nbsp;and&nbsp;update&nbsp;the&nbsp;attribute&nbsp;in&nbsp;the&nbsp;child&nbsp;that&nbsp;reference&nbsp;the&nbsp;previous&nbsp;value.<br>
+This&nbsp;is&nbsp;different&nbsp;from&nbsp;set_attribute,&nbsp;which&nbsp;only&nbsp;update&nbsp;existing&nbsp;attribute.</tt></dd></dl>
+
+<dl><dt><a name="SeriaNode-update_attribute_by_value"><strong>update_attribute_by_value</strong></a>(self, old_value: str, new_value: str)</dt><dd><tt>Update&nbsp;the&nbsp;attribute&nbsp;value&nbsp;by&nbsp;its&nbsp;old&nbsp;value.&nbsp;This&nbsp;applies&nbsp;to&nbsp;all&nbsp;child&nbsp;nodes&nbsp;and&nbsp;recursively.<br>
+If&nbsp;the&nbsp;attribute&nbsp;value&nbsp;is&nbsp;equal&nbsp;to&nbsp;the&nbsp;old&nbsp;value,&nbsp;it&nbsp;will&nbsp;be&nbsp;updated&nbsp;to&nbsp;the&nbsp;new&nbsp;value.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="alist">class <strong>alist</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#alist">alist</a>(data:&nbsp;dict&nbsp;=&nbsp;None)<br>
+&nbsp;<br>
+Association&nbsp;list&nbsp;that&nbsp;maintains&nbsp;the&nbsp;order&nbsp;of&nbsp;key-value&nbsp;pairs&nbsp;and&nbsp;allows&nbsp;insertion.<br>
+The&nbsp;dict&nbsp;part&nbsp;is&nbsp;used&nbsp;to&nbsp;store&nbsp;the&nbsp;data,&nbsp;while&nbsp;the&nbsp;list&nbsp;part&nbsp;is&nbsp;used&nbsp;to&nbsp;store&nbsp;the&nbsp;order&nbsp;of&nbsp;insertion.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="alist-__contains__"><strong>__contains__</strong></a>(self, key) -&gt; bool</dt></dl>
+
+<dl><dt><a name="alist-__init__"><strong>__init__</strong></a>(self, data: dict = None)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="alist-__iter__"><strong>__iter__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="alist-get"><strong>get</strong></a>(self, key)</dt></dl>
+
+<dl><dt><a name="alist-index"><strong>index</strong></a>(self, key) -&gt; int</dt></dl>
+
+<dl><dt><a name="alist-insert"><strong>insert</strong></a>(self, index, key, value)</dt></dl>
+
+<dl><dt><a name="alist-keys"><strong>keys</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="alist-put"><strong>put</strong></a>(self, key, value)</dt></dl>
+
+<dl><dt><a name="alist-remove"><strong>remove</strong></a>(self, key)</dt></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-dump"><strong>dump</strong></a>(node: seria.SeriaNode, filepath: str)</dt><dd><tt>Dump&nbsp;a&nbsp;<a href="#SeriaNode">SeriaNode</a>&nbsp;to&nbsp;a&nbsp;file.</tt></dd></dl>
+ <dl><dt><a name="-load"><strong>load</strong></a>(filepath: str) -&gt; seria.SeriaNode</dt><dd><tt>Load&nbsp;a&nbsp;<a href="#SeriaNode">SeriaNode</a>&nbsp;from&nbsp;a&nbsp;file.<br>
+@return:&nbsp;the&nbsp;root&nbsp;node&nbsp;of&nbsp;the&nbsp;<a href="#SeriaNode">SeriaNode</a>,&nbsp;or&nbsp;None&nbsp;if&nbsp;the&nbsp;file&nbsp;could&nbsp;not&nbsp;be&nbsp;opened.</tt></dd></dl>
+ <dl><dt><a name="-tree"><strong>tree</strong></a>(node: seria.SeriaNode, max_depth: int = None) -&gt; str</dt><dd><tt>Print&nbsp;a&nbsp;<a href="#SeriaNode">SeriaNode</a>&nbsp;in&nbsp;a&nbsp;tree-like&nbsp;format.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ATTRIBUTE_PATTERN</strong> = '([a-zA-Z][0-9a-zA-Z.:_]*)'<br>
+<strong>VALUE_PATTERN</strong> = '(.*)'</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#7799ee">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Author</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#7799ee"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%">Max</td></tr></table>
+</body></html>
