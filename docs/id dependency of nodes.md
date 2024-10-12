@@ -1,4 +1,4 @@
-# Seria node id dependency
+# id dependency of various nodes
 
 When adding a new ship node from a design file to a player's profile, `m_id` must be handled carefully and made unique among all other `m_id`. This is because `m_id` is also referenced by other attributes such as `m_master_id` and `m_owner_id`. A ship design file, by default, contains existing ids. When adding multiple ship nodes to the profile, ids must be changed to avoid collision. Having duplicate id will cause the game to crash.
 
