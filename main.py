@@ -1,176 +1,149 @@
 from tkinter import *
-from tkinter import ttk, filedialog
-from seria_tree import *
+from tkinter import filedialog, ttk
+import seria
+
+__author__ = 'Max'
+__version__ = '0.1.0'
 
 
-class SeriaView:
+class SeriaController:
     def __init__(self):
         # Data model
-        self.profile: SeriaTree = None
-        # self.show_escadra = True
-        # self.show_location = True
-        # self.show_npc = True
+        self.seria: seria.SeriaNode = None
 
-        # UI
-        self.root_window = Tk()
-        self.root_window.title("SeriaView - by DKAMX")
-        self.root_window.minsize(640, 480)
+        # GUI
+        self.root = Tk()
+        self.root.title(f'SeriaView v{__version__}')
+        self.root.minsize(640, 480)
 
         self.treeview: ttk.Treeview = None
-        self.detail_text: Text = None
+        self.text_detail: Text = None
 
-        self._create_menu_bar()
-        self._create_treeview()
+        self._make_menu()
+        self._make_treeview()
+        # TODO base view
+        # TODO map view
 
-        self.root_window.mainloop()
+        self.root.mainloop()
 
-    def _create_menu_bar(self):
-        menu_bar = Menu(self.root_window)
-        self.root_window.config(menu=menu_bar)
+    def _make_menu(self):
+        menubar = Menu(self.root)
+        self.root.config(menu=menubar)
+        menu_file = Menu(menubar, tearoff=0)
+        menu_file.add_command(label='Open', command=self.open_file)
+        menu_file.add_command(label='Close', command=self.close_file)
+        menubar.add_cascade(label='File', menu=menu_file)
 
-        file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Open", command=self._open_file)
-        file_menu.add_command(label="Close", command=self._close_file)
-        menu_bar.add_cascade(label="File", menu=file_menu)
+    def _make_treeview(self):
+        frm_tree = ttk.Frame(self.root)
+        frm_tree.grid_columnconfigure(0, weight=1)
+        frm_tree.grid_columnconfigure(2, weight=1)
+        frm_tree.grid_rowconfigure(0, weight=1)
 
-        # view_menu = Menu(menu_bar, tearoff=0)
-        # view_menu.add_command(label="Expand all")
-        # view_menu.add_command(label="Collapse all")
-        # view_menu.add_command(label="Expand selected")
-        # view_menu.add_command(label="Collapse selected")
-        # menu_bar.add_cascade(label="View", menu=view_menu)
+        self.treeview = ttk.Treeview(frm_tree, show='tree')
+        self.treeview.grid(row=0, column=0,
+                           sticky=NSEW)
 
-        # filter_menu = Menu(menu_bar, tearoff=0)
-        # menu_bar.add_cascade(label="Filter", menu=filter_menu)
+        sb_tree = ttk.Scrollbar(frm_tree, orient='vertical',
+                                command=self.treeview.yview)
+        sb_tree.grid(row=0, column=1,
+                     sticky=NS)
+        self.treeview.config(yscrollcommand=sb_tree.set)
 
-    def _create_treeview(self):
-        tree_frame = Frame(self.root_window, padx=5, pady=5)
-        tree_frame.grid_columnconfigure(0, weight=1)
-        tree_frame.grid_columnconfigure(2, weight=1)
-        tree_frame.grid_rowconfigure(0, weight=1)
+        self.text_detail = Text(frm_tree, width=40)
+        self.text_detail.insert('end', 'Open a file to view details')
+        self.text_detail.config(state=DISABLED)
+        self.text_detail.grid(row=0, column=2,
+                              sticky=NSEW)
 
-        self.treeview = ttk.Treeview(tree_frame, show="tree")
-        self.treeview.grid(row=0, column=0, sticky=NSEW)
-        self.treeview.bind("<<TreeviewSelect>>", self._on_tree_select)
+        sb_detail = ttk.Scrollbar(
+            frm_tree, orient='vertical', command=self.text_detail.yview)
+        sb_detail.grid(row=0, column=3,
+                       sticky=NS)
+        self.text_detail.config(yscrollcommand=sb_detail.set)
 
-        tree_scrollbar = ttk.Scrollbar(
-            tree_frame, orient="vertical", command=self.treeview.yview)
-        tree_scrollbar.grid(row=0, column=1, sticky=NS)
-        self.treeview.config(yscrollcommand=tree_scrollbar.set)
+        frm_tree.pack(expand=True, fill=BOTH)
 
-        self.detail_text = Text(tree_frame, width=40)
-        self.detail_text.insert('end', 'Open a file to view details')
-        self.detail_text.config(state=DISABLED)
-        self.detail_text.grid(row=0, column=2, sticky=NSEW)
+        self.treeview.bind('<<TreeviewSelect>>', self._on_treeview_select)
 
-        text_scrollbar = ttk.Scrollbar(
-            tree_frame, orient="vertical", command=self.detail_text.yview)
-        text_scrollbar.grid(row=0, column=3, sticky=NS)
-        self.detail_text.config(yscrollcommand=text_scrollbar.set)
+    def _update_treeview(self):
+        def summary(node: seria.SeriaNode):
+            classname = node.get_attribute('m_classname')
+            name = node.get_attribute('m_name')
+            codename = node.get_attribute('m_codename')
+            fullname = node.get_attribute('m_fullname')
+            is_tarkhan = node.get_attribute('m_tarkhan')
+            code = node.get_attribute('m_code')
 
-        tree_frame.pack(expand=True, fill=BOTH)
+            if classname == 'Escadra':
+                return f'Squadron {name}'
+            elif classname == 'Location':
+                return f'City {name} ({codename})'
+            elif classname == 'NPC':
+                return f'{classname} {fullname}' if is_tarkhan else classname
+            elif classname == 'Node':
+                return f'{classname} {name}' if code == '7' else classname
+            elif classname == 'Body':
+                return f'{classname} {name}' if name else classname
+            return classname
 
-    # File menu actions
-    def _open_file(self):
-        filename = filedialog.askopenfilename()
-        if isinstance(filename, tuple):
-            return
-
-        try:
-            self.profile = SeriaTree(filename)
-        except Exception:
-            return
-
-        self._clear_treeview()
-
-        self.profile.build(readAttributeFilter('attribute_filter.json'))
-
-        self._load_tree(self.profile.tree.root, '')
-        self.treeview.item(self.profile.tree.root, open=True)
-
-        self.detail_text.config(state=NORMAL)
-        self.detail_text.delete('1.0', 'end')
-        self.detail_text.insert('end', 'Select a node to view details')
-        self.detail_text.config(state=DISABLED)
-
-    def _close_file(self):
-        if self.profile is not None:
-            self.profile.__exit__()
-
-        self._clear_treeview()
-
-    def _load_tree(self, node_id, parent_id, depth=0, max_depth=3):
-        if depth > max_depth:
-            return
-
-        node = self.profile.tree.get_node(node_id)
-
-        self.treeview.insert(parent_id, 'end', node_id,
-                             text=getNodeHeading(node))
-
-        children = self.profile.tree.children(node_id)
-        for child in children:
-            self._load_tree(child.identifier, node_id, depth + 1, max_depth)
-
-    # Treeview actions
-    def _clear_treeview(self):
-        self.detail_text.config(state=NORMAL)
-        self.detail_text.delete('1.0', 'end')
-        self.detail_text.insert('end', 'Open a file to view details')
-        self.detail_text.config(state=DISABLED)
+        def add_children(node: seria.SeriaNode, parent_id: str):
+            node_id = self.treeview.insert(
+                parent_id, 'end', text=summary(node))
+            for child in node.get_nodes():
+                add_children(child, node_id)
 
         self.treeview.delete(*self.treeview.get_children())
+        root_id = self.treeview.insert('', 'end', text=summary(self.seria))
 
-    def _on_tree_select(self, event):
-        self.detail_text.config(state=NORMAL)
-        self.detail_text.delete('1.0', 'end')
+        for node in self.seria.get_nodes():
+            add_children(node, root_id)
+
+        self.treeview.item(root_id, open=True)
+
+    def _on_treeview_select(self, event):
+        def _show_node_attributes(node: seria.SeriaNode):
+            self.text_detail.config(state=NORMAL)
+            self.text_detail.delete(1.0, END)
+            for key, value in node.get_attributes().items():
+                self.text_detail.insert('end', f'{key}: {value}\n')
+            self.text_detail.config(state=DISABLED)
 
         node_id = event.widget.focus()
-        node = self.profile.tree.get_node(node_id)
+        parent_id = self.treeview.parent(node_id)
 
-        self.detail_text.insert('end', getNodeSummary(node))
-        self.detail_text.config(state=DISABLED)
+        if parent_id == '':
+            _show_node_attributes(self.seria)
+            return
 
+        # node index sequence (from root to selected node)
+        index_sequence = []
+        while parent_id != '':
+            index_sequence.insert(0, self.treeview.index(node_id))
+            node_id = parent_id
+            parent_id = self.treeview.parent(node_id)
 
-def getNodeHeading(node: Node):
-    classname = node.tag
-    if classname == 'Escadra':
-        name = node.data['m_name'][1]
-        if name == 'MARK' or name == 'DETACHMENT':
-            return f"Escadra: {name} [Player]"
-        return f"Fleet: {name}"
-    if classname == 'Location':
-        return f"City: {node.data['m_name'][1]} - {node.data['m_codename'][1]}"
-    if classname == 'NPC':
-        if 'm_tarkhan' in node.data:
-            return f"NPC: {node.data['m_fullname'][1]}"
-    if classname == 'Node':
-        if 'm_name' in node.data:
-            return f"{classname} {node.data['m_name'][1]}"
-    return classname
+        node = self.seria
+        for index in index_sequence:
+            node = node.get_node(index)
 
+        _show_node_attributes(node)
 
-def getNodeSummary(node: Node):
-    if node.data is None:
-        return None
+    def open_file(self):
+        file_path = filedialog.askopenfilename(
+            filetypes=[('Seria files', '*.seria')])
+        if file_path:
+            self.seria = seria.load(file_path)
+            self._update_treeview()
 
-    output = ''
-    for item in node.data.items():
-        attribute_name = item[0]
-        value = item[1]
-
-        if attribute_name == 'Header' or attribute_name == 'LineIndex':
-            output += f"{attribute_name}: {value}\n"
-        else:
-            if isinstance(value, list):
-                output += f"{attribute_name}:\n"
-                for v in value:
-                    output += f" {v[1]}\n"
-            else:
-                output += f"{item[0]}: {item[1][1]}\n"
-
-    return output
+    def close_file(self):
+        self.seria = None
+        self.treeview.delete(*self.treeview.get_children())
+        self.text_detail.config(state=NORMAL)
+        self.text_detail.delete(1.0, END)
+        self.text_detail.insert('end', 'Open a file to view details')
+        self.text_detail.config(state=DISABLED)
 
 
-if __name__ == "__main__":
-    SeriaView()
+if __name__ == '__main__':
+    SeriaController()
