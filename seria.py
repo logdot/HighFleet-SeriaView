@@ -339,37 +339,40 @@ def tree(node: SeriaNode, max_depth: int = None) -> str:
     return '\n'.join(output)
 
 
+def dump_str(node: SeriaNode) -> str:
+    '''Dump a SeriaNode to a string.'''
+
+    output = []
+
+    if node.header is not None:
+        output.append(node.header)
+    output.append('{')
+
+    for group in node.data_group:
+        if isinstance(group, alist):
+            for name, value in group:
+                if name == '_mesh':
+                    output.extend(f'{v}' for v in value)
+                else:
+                    if isinstance(value, list):
+                        output.extend(f'{name}={v}' for v in value)
+                    else:
+                        output.append(f'{name}={value}')
+        else:
+            output.append(dump_str(group))
+
+    output.append('}')
+    return '\n'.join(output)
+
+
 def dump(node: SeriaNode, filepath: str):
     '''Dump a SeriaNode to a file.'''
 
     logger = logging.getLogger('seria.dump')
 
-    def _dump(node: SeriaNode) -> str:
-        output = []
-
-        if node.header is not None:
-            output.append(node.header)
-        output.append('{')
-
-        for group in node.data_group:
-            if isinstance(group, alist):
-                for name, value in group:
-                    if name == '_mesh':
-                        output.extend(f'{v}' for v in value)
-                    else:
-                        if isinstance(value, list):
-                            output.extend(f'{name}={v}' for v in value)
-                        else:
-                            output.append(f'{name}={value}')
-            else:
-                output.append(_dump(group))
-
-        output.append('}')
-        return '\n'.join(output)
-
     try:
         with open(filepath, 'w', encoding='cp1251') as file:
-            file.write(_dump(node) + '\n')
+            file.write(dump_str(node) + '\n')
     except IOError:
         logger.error(f'Could not open file: {filepath}')
 
