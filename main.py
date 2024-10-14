@@ -184,7 +184,7 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
                 # explicit set iid so it can be reused
                 self.tree_ammo.insert('', 'end', iid=node_index, values=(
                     ammo_types[index], ammo.get_attribute('m_count')))
-                node_index += 1
+            node_index += 1
 
     def _add_ammo(self, amount: int):
         # will always return str regardless of initial iid type
