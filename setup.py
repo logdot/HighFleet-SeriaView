@@ -1,5 +1,4 @@
 from distutils.core import setup
-import py2exe
+from py2exe import freeze
 
-setup(console=['main.py'], py_modules=['main'],
-      data_file=['attribute_filter.json'])
+freeze(windows=['main.py'], options={'bundle_files': 1})
