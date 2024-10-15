@@ -4,7 +4,7 @@ from tkinter import filedialog, messagebox, scrolledtext, ttk
 import seria
 
 __author__ = 'Max'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 _TIP_FILE = 'Open a file to view details'
 _TIP_NODE = 'Click on an item to view details'
@@ -272,7 +272,7 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
 
             for item in self.squadron_hold_nodes[squadron_node_index].get_nodes():
                 oid = item.get_attribute('m_oid')
-                count = item.get_attribute('m_count')
+                count = item.get_attribute('m_count') or 1
                 self.tree_hold.insert(hold_iid, 'end',
                                       values=(self.get_item_name(oid), count))
 
@@ -285,15 +285,13 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
     def _update_tree_ammo(self):
         self.tree_ammo.delete(*self.tree_ammo.get_children())
 
-        node_index = 0
-        for ammo in self.ammo_nodes:
+        for node_index, ammo in enumerate(self.ammo_nodes):
             index = ammo.get_attribute('m_index')
             ammo_type = self.get_ammo_type(index)
-            if ammo_type is not None:
-                # explicit set iid so it can be reused
+            if ammo_type:
+                count = ammo.get_attribute('m_count') or 1
                 self.tree_ammo.insert('', 'end',
-                                      iid=node_index, values=(ammo_type, ammo.get_attribute('m_count')))
-            node_index += 1
+                                      iid=node_index, values=(ammo_type, count))
 
     def _add_part_amount(self, amount: int):
         iid = self.tree_hold.focus()
@@ -306,8 +304,9 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         parent_index = self.tree_hold.index(parent_iid)
         item = self.squadron_hold_nodes[parent_index].get_node(index)
 
-        item_count = int(item.get_attribute('m_count'))
-        item.set_attribute('m_count', str(item_count + amount))
+        item_count = item.get_attribute('m_count')
+        new_count = (int(item_count) if item_count else 1) + amount
+        item.set_attribute('m_count', str(new_count))
 
         self._update_tree_hold()
 
@@ -318,15 +317,15 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         self._add_part_amount(50)
 
     def _add_ammo_amount(self, amount: int):
-        # will always return str regardless of initial iid type
         index = self.tree_ammo.focus()
 
-        if index == '':
+        if not index:
             return
 
         ammo = self.ammo_nodes[int(index)]
-        ammo_count = int(ammo.get_attribute('m_count'))
-        ammo.set_attribute('m_count', str(ammo_count + amount))
+        ammo_count = ammo.get_attribute('m_count')
+        new_count = (int(ammo_count) if ammo_count else 1) + amount
+        ammo.set_attribute('m_count', str(new_count))
 
         self._update_tree_ammo()
 
