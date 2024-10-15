@@ -1,12 +1,15 @@
+import json
 from tkinter import *
 from tkinter import filedialog, messagebox, scrolledtext, ttk
 import seria
 
 __author__ = 'Max'
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 _TIP_FILE = 'Open a file to view details'
 _TIP_NODE = 'Click on an item to view details'
+_CFG_PATH = 'config.json'
+_CFG_SET = ('gamepath', 'oid_text')
 
 
 class SeriaController:
@@ -16,18 +19,25 @@ class SeriaController:
         self.root.geometry('640x480')
         self.root.minsize(640, 480)
 
+        self.config: dict = dict()
+
         # Data model
         self.var_viewmode = IntVar(value=0)
-        self.var_filepath: str = StringVar()
         self.seria: seria.SeriaNode = None
         # reference to seria node, easy to modify
-        self.ammo_nodes = list()
+        self.var_bonus: str = StringVar()
+        self.var_cash: str = StringVar()
         self.squadron_nodes = list()
+        self.squadron_hold_nodes = list()
+        self.ammo_nodes = list()
 
         # Base view
+        self.entry_cash: Entry = None
+        self.entry_bonus: Entry = None
         self.frm_baseview: Frame = None
-        self.tree_ammo: ttk.Treeview = None
         self.tree_squadron: ttk.Treeview = None
+        self.tree_hold: ttk.Treeview = None
+        self.tree_ammo: ttk.Treeview = None
 
         # TODO Map view
         # self.frm_map: Frame = None
@@ -43,7 +53,39 @@ class SeriaController:
         # TODO make map view
         self._on_view_change()
 
+        self.root.after(0, self._load_config)
         self.root.mainloop()
+
+    def _load_config(self):
+        try:
+            file = open(_CFG_PATH, 'r')
+
+            config = json.load(file)
+            if tuple(config.keys()) != _CFG_SET:
+                messagebox.showerror(
+                    'Config', 'Invalid config file, please delete it')
+                return
+
+            self.config = config
+        except FileNotFoundError:
+            gamepath = filedialog.askdirectory(
+                title='Select HighFleet game folder')
+
+            if gamepath == '' or isinstance(gamepath, tuple):
+                messagebox.showwarning('Config', 'Game folder not selected')
+                return
+
+            self.config['gamepath'] = gamepath
+
+            oid_text = load_text(gamepath)
+            if oid_text is None:
+                messagebox.showerror(
+                    'Config', 'Failed to load dialog file')
+                return
+
+            self.config['oid_text'] = oid_text
+
+            json.dump(self.config, open(_CFG_PATH, 'w'))
 
     def _make_menu(self):
         def show_about():
@@ -92,32 +134,32 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         self.frm_baseview = Frame(self.root)
         self.frm_baseview.columnconfigure(0, weight=1)
         self.frm_baseview.columnconfigure(1, weight=1)
-        self.frm_baseview.rowconfigure(0, weight=2)
         self.frm_baseview.rowconfigure(1, weight=1)
+        self.frm_baseview.rowconfigure(2, weight=1)
 
-        # special ammunition register panel
-        frm_ammo = LabelFrame(self.frm_baseview, text='Ammunition')
-        frm_ammo.grid(row=0, column=0, sticky=NSEW)
-        frm_ammo.propagate(False)
+        # basic information panel
+        frm_info = Frame(self.frm_baseview)
+        frm_info.grid(row=0, column=0, columnspan=2, sticky=NSEW)
 
-        self.tree_ammo = ttk.Treeview(frm_ammo, columns=['type', 'count'],
-                                      selectmode=BROWSE)
-        self.tree_ammo.heading('#0', text='')
-        self.tree_ammo.heading('type', anchor=CENTER, text='TYPE')
-        self.tree_ammo.heading('count', anchor=CENTER, text='PCS')
-        self.tree_ammo.column('#0', width=0, stretch=NO)
-        self.tree_ammo.column('type', width=200)
-        self.tree_ammo.column('count', anchor=CENTER, width=50)
-        self.tree_ammo.pack(expand=True, fill=BOTH, side=LEFT)
+        label_bonus = Label(frm_info, text='Bonus')
+        label_bonus.pack(side=LEFT)
+        self.entry_bonus = Entry(
+            frm_info, textvariable=self.var_bonus, width=10)
+        self.entry_bonus.config(state=DISABLED)
+        self.entry_bonus.pack(side=LEFT)
 
-        sb_ammo = ttk.Scrollbar(frm_ammo, orient='vertical',
-                                command=self.tree_ammo.yview)
-        sb_ammo.pack(fill=Y, side=RIGHT)
-        self.tree_ammo.config(yscrollcommand=sb_ammo.set)
+        label_cash = Label(frm_info, text='Cash')
+        label_cash.pack(side=LEFT)
+        self.entry_cash = Entry(frm_info, textvariable=self.var_cash, width=10)
+        self.entry_cash.config(state=DISABLED)
+        self.entry_cash.pack(side=LEFT)
+
+        self.var_bonus.trace('w', self._on_bonus_change)
+        self.var_cash.trace('w', self._on_cash_change)
 
         # player's squadron panel
         frm_squadron = LabelFrame(self.frm_baseview, text='Squadron')
-        frm_squadron.grid(row=0, column=1, sticky=NSEW)
+        frm_squadron.grid(row=1, column=0, sticky=NSEW)
         frm_squadron.propagate(False)
 
         self.tree_squadron = ttk.Treeview(frm_squadron, selectmode=BROWSE,
@@ -129,64 +171,153 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         sb_squadron.pack(fill=Y, side=RIGHT)
         self.tree_squadron.config(yscrollcommand=sb_squadron.set)
 
-        # control panel
-        frm_control = Frame(self.frm_baseview)
-        frm_control.grid(row=1, column=0, columnspan=2, sticky=NSEW)
+        #  ship hold panel
+        frm_hold = LabelFrame(self.frm_baseview, text='Ship Hold')
+        frm_hold.grid(row=1, column=1, sticky=NSEW)
+        frm_hold.propagate(False)
 
-        btn_ammo_add_100 = Button(frm_control, text='Add 100 rounds',
+        self.tree_hold = ttk.Treeview(frm_hold, columns=['type', 'count'],
+                                      selectmode=BROWSE)
+        self.tree_hold.heading('#0', text='')
+        self.tree_hold.heading('type', anchor=CENTER, text='NAME')
+        self.tree_hold.heading('count', anchor=CENTER, text='AMT')
+        self.tree_hold.column('#0', width=20, stretch=False)
+        self.tree_hold.column('type', width=200)
+        self.tree_hold.column('count', anchor=CENTER, width=50)
+        self.tree_hold.pack(expand=True, fill=BOTH, side=LEFT)
+
+        sb_parts = ttk.Scrollbar(frm_hold, orient='vertical',
+                                 command=self.tree_hold.yview)
+        sb_parts.pack(fill=Y, side=RIGHT)
+        self.tree_hold.config(yscrollcommand=sb_parts.set)
+
+        self.tree_hold.bind('<<TreeviewSelect>>', self._on_tree_hold_select)
+
+        # special ammunition register panel
+        frm_ammo = LabelFrame(self.frm_baseview, text='Ammunition')
+        frm_ammo.grid(row=2, column=0, sticky=NSEW)
+        frm_ammo.propagate(False)
+
+        self.tree_ammo = ttk.Treeview(frm_ammo, columns=['type', 'count'],
+                                      selectmode=BROWSE)
+        self.tree_ammo.heading('#0', text='')
+        self.tree_ammo.heading('type', anchor=CENTER, text='TYPE')
+        self.tree_ammo.heading('count', anchor=CENTER, text='PCS')
+        self.tree_ammo.column('#0', width=0, stretch=False)
+        self.tree_ammo.column('type', width=200)
+        self.tree_ammo.column('count', anchor=CENTER, width=50)
+        self.tree_ammo.pack(expand=True, fill=BOTH, side=LEFT)
+
+        sb_ammo = ttk.Scrollbar(frm_ammo, orient='vertical',
+                                command=self.tree_ammo.yview)
+        sb_ammo.pack(fill=Y, side=RIGHT)
+        self.tree_ammo.config(yscrollcommand=sb_ammo.set)
+
+        self.tree_ammo.bind('<<TreeviewSelect>>', self._on_tree_ammo_select)
+
+        # control panel
+        frm_control = LabelFrame(self.frm_baseview, text='Control')
+        frm_control.grid(row=2, column=1, sticky=NSEW)
+        frm_control.propagate(False)
+
+        self.frm_hold_control = Frame(frm_control)
+        btn_hold_add_100 = Button(self.frm_hold_control, text='+ 10',
+                                  command=self._add_part_10)
+        btn_hold_add_500 = Button(self.frm_hold_control, text='+ 50',
+                                  command=self._add_part_50)
+        btn_hold_add_100.pack(side=LEFT)
+        btn_hold_add_500.pack(side=LEFT)
+
+        self.frm_ammo_control = Frame(frm_control)
+        btn_ammo_add_100 = Button(self.frm_ammo_control, text='+ 100',
                                   command=self._add_ammo_100)
-        btn_ammo_add_100.pack(side=LEFT)
-        btn_ammo_add_500 = Button(frm_control, text='Add 500 rounds',
+        btn_ammo_add_500 = Button(self.frm_ammo_control, text='+ 500',
                                   command=self._add_ammo_500)
+        btn_ammo_add_100.pack(side=LEFT)
         btn_ammo_add_500.pack(side=LEFT)
 
     def _update_baseview(self):
-        self._update_ammo_tree()
+        self.entry_bonus.config(state=NORMAL)
+        self.entry_cash.config(state=NORMAL)
+
+        self._update_tree_squadron()
+        self._update_tree_hold()
+        self._update_tree_ammo()
+
+    def _update_tree_squadron(self):
+        self.tree_squadron.delete(*self.tree_squadron.get_children())
 
         for squadron in self.squadron_nodes:
             name = squadron.get_attribute('m_name')
-            tree_id = self.tree_squadron.insert('', 'end', text=name)
-            ships = squadron.filter_nodes(lambda n: n.header == 'm_children=7')
-            for ship in ships:
-                ship_name = ship.get_attribute('m_name')
-                self.tree_squadron.insert(tree_id, 'end', text=ship_name)
 
-    def _update_ammo_tree(self):
-        ammo_types = {
-            '8': '122mm Unguided rocket',
-            '13': '340mm Unguided rocket',
-            '14': '37mm Incendiary',
-            '15': '57mm Incendiary',
-            '16': '100mm Armor piercing',
-            '17': '100mm Proximity fuze',
-            '18': '100mm Incendiary',
-            '19': '130mm Armor piercing',
-            '20': '130mm Proximity fuze',
-            '21': '130mm Incendiary',
-            '22': '130mm Laser guided',
-            '23': '180mm Armor piercing',
-            '24': '180mm Proximity fuze',
-            '25': '180mm Incendiary',
-            '26': '180mm Laser guided',
-            '27': '220mm Incendiary',
-            '28': '300mm Incendiary',
-            '30': '100 kg General purpose bomb',
-            '31': '250 kg General purpose bomb',
-            '35': 'Air-to-air missile'
-        }
+            # squadron treeview
+            squadron_iid = self.tree_squadron.insert('', 'end', text=name)
+            for ship in squadron.filter_nodes(lambda n: n.header == 'm_children=7'):
+                self.tree_squadron.insert(squadron_iid, 'end',
+                                          text=self.get_ship_name(ship))
 
+        # expand tree root by default
+        for child in self.tree_squadron.get_children():
+            self.tree_squadron.item(child, open=True)
+
+    def _update_tree_hold(self):
+        self.tree_hold.delete(*self.tree_hold.get_children())
+
+        squadron_node_index = 0
+        for squadron in self.squadron_nodes:
+            name = squadron.get_attribute('m_name')
+
+            # ship hold treeview
+            hold_iid = self.tree_hold.insert('', 'end', values=(name, ''))
+
+            for item in self.squadron_hold_nodes[squadron_node_index].get_nodes():
+                oid = item.get_attribute('m_oid')
+                count = item.get_attribute('m_count')
+                self.tree_hold.insert(hold_iid, 'end',
+                                      values=(self.get_item_name(oid), count))
+
+            squadron_node_index += 1
+
+        # expand tree root by default
+        for child in self.tree_hold.get_children():
+            self.tree_hold.item(child, open=True)
+
+    def _update_tree_ammo(self):
         self.tree_ammo.delete(*self.tree_ammo.get_children())
 
         node_index = 0
         for ammo in self.ammo_nodes:
             index = ammo.get_attribute('m_index')
-            if index in ammo_types:
+            ammo_type = self.get_ammo_type(index)
+            if ammo_type is not None:
                 # explicit set iid so it can be reused
-                self.tree_ammo.insert('', 'end', iid=node_index, values=(
-                    ammo_types[index], ammo.get_attribute('m_count')))
+                self.tree_ammo.insert('', 'end',
+                                      iid=node_index, values=(ammo_type, ammo.get_attribute('m_count')))
             node_index += 1
 
-    def _add_ammo(self, amount: int):
+    def _add_part_amount(self, amount: int):
+        iid = self.tree_hold.focus()
+        parent_iid = self.tree_hold.parent(iid)
+
+        if parent_iid == '':
+            return
+
+        index = self.tree_hold.index(iid)
+        parent_index = self.tree_hold.index(parent_iid)
+        item = self.squadron_hold_nodes[parent_index].get_node(index)
+
+        item_count = int(item.get_attribute('m_count'))
+        item.set_attribute('m_count', str(item_count + amount))
+
+        self._update_tree_hold()
+
+    def _add_part_10(self):
+        self._add_part_amount(10)
+
+    def _add_part_50(self):
+        self._add_part_amount(50)
+
+    def _add_ammo_amount(self, amount: int):
         # will always return str regardless of initial iid type
         index = self.tree_ammo.focus()
 
@@ -197,13 +328,13 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         ammo_count = int(ammo.get_attribute('m_count'))
         ammo.set_attribute('m_count', str(ammo_count + amount))
 
-        self._update_ammo_tree()
+        self._update_tree_ammo()
 
     def _add_ammo_100(self):
-        self._add_ammo(100)
+        self._add_ammo_amount(100)
 
     def _add_ammo_500(self):
-        self._add_ammo(500)
+        self._add_ammo_amount(500)
 
     def _make_treeview(self):
         self.frm_treeview = Frame(self.root)
@@ -244,16 +375,17 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
             name = node.get_attribute('m_name')
             codename = node.get_attribute('m_codename')
             fullname = node.get_attribute('m_fullname')
-            code = node.get_attribute('m_code')
+
             if classname == 'Escadra':
                 return f'Squadron {name}'
-            elif classname == 'Location':
+            if classname == 'Location':
                 return f'City {name} ({codename})'
-            elif classname == 'NPC':
+            if classname == 'NPC':
                 return f'{classname} {fullname}' if str.isalpha(name) and fullname else classname
-            elif classname == 'Node':
-                return f'{classname} {name}' if code == '7' else classname
-            elif classname == 'Body':
+            if classname == 'Node':
+                ship_name = self.get_ship_name(node)
+                return classname if ship_name is None else f'{classname} {ship_name}'
+            if classname == 'Body':
                 return f'{classname} {name}' if name else classname
             return classname
 
@@ -280,6 +412,35 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
             'end', _TIP_NODE)
         self.text_treeview_detail.config(state=DISABLED)
 
+    def _on_bonus_change(self, *args):
+        try:
+            bonus = int(self.var_bonus.get())
+            if bonus <= 0:
+                raise ValueError
+            self.seria.set_attribute('m_scores', str(bonus))
+        except ValueError:
+            self.var_bonus.set(self.seria.get_attribute('m_scores'))
+
+    def _on_cash_change(self, *args):
+        try:
+            cash = int(self.var_cash.get())
+            if cash < 0:
+                raise ValueError
+            self.seria.set_attribute('m_cash', str(cash))
+        except ValueError:
+            self.var_cash.set(self.seria.get_attribute('m_cash'))
+
+    def _on_tree_squadron_select(self, event):
+        pass
+
+    def _on_tree_hold_select(self, event):
+        self.frm_ammo_control.pack_forget()
+        self.frm_hold_control.pack(expand=True, fill=BOTH)
+
+    def _on_tree_ammo_select(self, event):
+        self.frm_hold_control.pack_forget()
+        self.frm_ammo_control.pack(expand=True, fill=BOTH)
+
     def _on_tree_seria_select(self, event):
         def print_key_value(k, v):
             return f'{k}: {v}\n' if not k.startswith('_') else f'{v}\n'
@@ -297,19 +458,19 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
                         'end', print_key_value(key, value))
             self.text_treeview_detail.config(state=DISABLED)
 
-        node_id = event.widget.focus()
-        parent_id = self.tree_seria.parent(node_id)
+        iid = event.widget.focus()
+        parent_iid = self.tree_seria.parent(iid)
 
-        if parent_id == '':
+        if parent_iid == '':
             print_node_attributes(self.seria)
             return
 
         # node index sequence (from root to selected node)
         index_sequence = []
-        while parent_id != '':
-            index_sequence.insert(0, self.tree_seria.index(node_id))
-            node_id = parent_id
-            parent_id = self.tree_seria.parent(node_id)
+        while parent_iid != '':
+            index_sequence.insert(0, self.tree_seria.index(iid))
+            iid = parent_iid
+            parent_iid = self.tree_seria.parent(iid)
 
         node = self.seria
         for index in index_sequence:
@@ -317,17 +478,64 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
 
         print_node_attributes(node)
 
+    def get_ship_name(self, node: seria.SeriaNode):
+        try:
+            frame = node.get_node_by_class('Frame')
+            body = frame.get_node_if(
+                lambda n: n.get_attribute('m_name') == 'COMBRIDGE')
+            creature = body.get_node_by_class('Creature')
+            return creature.get_attribute('m_ship_name')
+        except:
+            return None
+
+    def get_item_name(self, oid: str):
+        if self.config is None:
+            return oid
+        desc = self.config["oid_text"].get(f"{oid}_SDESC", "")
+        return f'{self.config["oid_text"].get(oid, oid)} {desc if desc == "" else f"({desc})"}'
+
+    def get_ammo_type(self, index: str):
+        ammo_types = {
+            '8': '122mm Unguided rocket',
+            '13': '340mm Unguided rocket',
+            '14': '37mm Incendiary',
+            '15': '57mm Incendiary',
+            '16': '100mm Armor piercing',
+            '17': '100mm Proximity fuze',
+            '18': '100mm Incendiary',
+            '19': '130mm Armor piercing',
+            '20': '130mm Proximity fuze',
+            '21': '130mm Incendiary',
+            '22': '130mm Laser guided',
+            '23': '180mm Armor piercing',
+            '24': '180mm Proximity fuze',
+            '25': '180mm Incendiary',
+            '26': '180mm Laser guided',
+            '27': '220mm Incendiary',
+            '28': '300mm Incendiary',
+            '30': '100 kg General purpose bomb',
+            '31': '250 kg General purpose bomb',
+            '35': 'Air-to-air missile'
+        }
+
+        return ammo_types.get(index, None)
+
     def open_file(self):
         file_path = filedialog.askopenfilename(
             filetypes=[('Seria files', '*.seria')])
 
         if file_path:
-            self.var_filepath = file_path
             self.seria = seria.load(file_path)
+
+            self.var_bonus.set(self.seria.get_attribute('m_scores'))
+            self.var_cash.set(self.seria.get_attribute('m_cash'))
 
             self.ammo_nodes = self.seria.get_nodes_by_class('Item')
             self.squadron_nodes = self.seria.filter_nodes(
                 lambda n: n.header == 'm_escadras=327' and n.get_attribute('m_name') in {'MARK', 'DETACHMENT'})
+            for squadron in self.squadron_nodes:
+                self.squadron_hold_nodes.append(
+                    squadron.get_node_if(lambda n: n.header == 'm_inventory=7'))
 
             self._update_baseview()
             self._update_treeview()
@@ -346,11 +554,16 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
             messagebox.showinfo('Save', f'File saved to: {filepath}')
 
     def close_file(self):
+        if self.seria is None:
+            return
         self.seria = None
 
         # clear base view
-        self.tree_ammo.delete(*self.tree_ammo.get_children())
+        self.entry_bonus.config(state=DISABLED)
+        self.entry_cash.config(state=DISABLED)
         self.tree_squadron.delete(*self.tree_squadron.get_children())
+        self.tree_hold.delete(*self.tree_hold.get_children())
+        self.tree_ammo.delete(*self.tree_ammo.get_children())
 
         # clear tree view
         self.tree_seria.delete(*self.tree_seria.get_children())
@@ -360,6 +573,41 @@ More information at: https://github.com/DKAMX/HighFleet-SeriaView''')
         self.text_treeview_detail.config(state=DISABLED)
 
         self.root.title(f'SeriaView v{__version__}')
+
+
+def load_text(gamepath):
+    '''Load in-game text from resource file, return as a dictionary
+    @return: key(oid), value(text)'''
+
+    lines = dec_seria(gamepath)
+
+    if lines is None:
+        return None
+
+    text_map = dict()
+    for line in lines:
+        if line.startswith('#ITEM') or line.startswith('#CRAFT') or line.startswith('#MDL'):
+            key, value = line.split('\t', 1)
+            text_map[key[1:]] = value
+    return text_map
+
+
+def dec_seria(filepath):
+    try:
+        dialog_path = filepath + '/Data/Dialogs/english.seria_enc'
+        file = open(dialog_path, 'rb')
+        data = list(file.read())
+        a = 0
+        b = 2531011
+        while a < len(data):
+            data[a] = (b ^ (b >> 15) ^ data[a]) & 0xff
+            b += 214013
+            b &= 0xffffffff
+            a += 1
+        return bytes(data).decode('cp1251').split('\n')
+    except:
+        print(f'Error: cannot open file {dialog_path}')
+        return None
 
 
 if __name__ == '__main__':
