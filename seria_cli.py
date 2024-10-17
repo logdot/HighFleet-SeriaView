@@ -3,7 +3,7 @@ import sys
 import seria
 
 __author__ = 'Max'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 
 def _print_help():
@@ -11,6 +11,7 @@ def _print_help():
 Options:
     -attributes              | List all distinct attributes
     -values <attribute name> | List all distinct values for the given attribute
+    -flagship                | Set the given ship design files to be a flagship
     -tree [<depth>]          | Print the tree structure of the seria file with optional depth
 Example:
     python seria.py -values m_classname profile.seria parts.seria''')
@@ -94,6 +95,17 @@ if __name__ == '__main__':
                 with open(output_filepath, 'w') as file:
                     file.write(seria.tree(node, depth))
                     print(f'Tree structure written to {output_filepath}')
+            except IOError:
+                logging.error('Could not open file: ' + filepath)
+    elif option == '-flagship':
+        for filepath in sys.argv[2:]:
+            try:
+                node = seria.load(filepath)
+                creature_node = node.get_node_by_class('Frame').get_node_if(lambda x: x.get_attribute(
+                    'm_name') == 'COMBRIDGE').get_node_by_class('Creature')
+                creature_node.put_attribute_after(
+                    'm_flagship', 'true', 'm_playable')
+                seria.dump(node, filepath)
             except IOError:
                 logging.error('Could not open file: ' + filepath)
     else:
