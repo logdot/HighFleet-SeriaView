@@ -23,11 +23,10 @@ jobs:
               with:
                 type: 'zip'
                 filename: 'release.zip'
-                path: 'dist'
+                directory: 'dist/'
             - name: "Create release"
               uses: softprops/action-gh-release@v2.0.8
               with:
                 draft: true
                 files: |
-                    release.zip
-                    LICENSE
+                    dist/release.zip
